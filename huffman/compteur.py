@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """ Module proposant la classe Compteur """
 from typing import TypeVar
 
