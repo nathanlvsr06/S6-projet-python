@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 ''' Module proposant la classe CodeBinaire '''
 from enum import Enum, auto
 
