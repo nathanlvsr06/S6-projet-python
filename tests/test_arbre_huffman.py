@@ -37,11 +37,10 @@ def test_arbre_incoherent_erreur2(feuille):
         ArbreHuffman(fils_gauche=feuille, fils_droit=feuille)
         
 @pytest.mark.parametrize("ab, resultat",
-                         [("feuille", True),
-                          ("arbre", False),
-                         ])  
-def test_est_une_feuille(ab, resultat, request):
-    ab = request.getfixturevalue(ab)
+                         [(ArbreHuffman('a',1), True),
+                          (ArbreHuffman(fils_gauche=ArbreHuffman('a', 1),fils_droit=ArbreHuffman('b', 2)), False),
+                        ])  
+def test_est_une_feuille(ab, resultat):
     assert ab.est_une_feuille == resultat
 
 def test_doit_etre_feuille_erreur(arbre):
@@ -52,11 +51,10 @@ def test_element(feuille):
     assert feuille.element == 'a'
 
 @pytest.mark.parametrize("ab, resultat",
-                         [("feuille", 1),
-                          ("arbre", 3),
+                         [(ArbreHuffman('a',1), 1),
+                          (ArbreHuffman(fils_gauche=ArbreHuffman('a', 1),fils_droit=ArbreHuffman('b', 2)), 3),
                         ])  
-def test_nb_occurences(ab, resultat, request):
-    ab = request.getfixturevalue(ab)
+def test_nb_occurences(ab, resultat):
     assert ab.nb_occurrences == resultat    
 
 def test_ne_doit_etre_feuille_erreur(feuille):
@@ -65,16 +63,14 @@ def test_ne_doit_etre_feuille_erreur(feuille):
         feuille.fils_droit
 
 @pytest.mark.parametrize("ab1, ab2, resultat",
-                         [("feuille", "feuille2", True),
-                          ("feuille", "feuille3", False),
-                          ("arbre", "arbre2", True),
-                          ("arbre", "arbre3", False),
-                          ("feuille", "arbre2", False),
-                          ("arbre", "feuille", False)
+                         [(ArbreHuffman('a',1), ArbreHuffman('a', 1), True),
+                          (ArbreHuffman('a',1), ArbreHuffman('b', 2), False),
+                          (ArbreHuffman(fils_gauche=ArbreHuffman('a', 1),fils_droit=ArbreHuffman('b', 2)), ArbreHuffman(fils_gauche=ArbreHuffman('a', 1),fils_droit=ArbreHuffman('b', 2)), True),
+                          (ArbreHuffman(fils_gauche=ArbreHuffman('a', 1),fils_droit=ArbreHuffman('b', 2)), ArbreHuffman(fils_gauche=ArbreHuffman('b', 2),fils_droit=ArbreHuffman('a', 1)), False),
+                          (ArbreHuffman('a',1), ArbreHuffman(fils_gauche=ArbreHuffman('a', 1),fils_droit=ArbreHuffman('b', 2)), False),
+                          (ArbreHuffman(fils_gauche=ArbreHuffman('a', 1),fils_droit=ArbreHuffman('b', 2)), ArbreHuffman('a',1), False)
                         ])  
-def test_equivalent(ab1, ab2, resultat, request):
-    ab1 = request.getfixturevalue(ab1)
-    ab2 = request.getfixturevalue(ab2)
+def test_equivalent(ab1, ab2, resultat):
     assert (ab1.equivalent(ab2)) == resultat
 
 def test_fils_gauche(arbre, feuille):
@@ -87,42 +83,34 @@ def test_add(arbre, feuille, feuille3):
     assert arbre.equivalent(feuille + feuille3)
 
 @pytest.mark.parametrize("ab1, ab2, resultat",
-                         [("feuille", "feuille2", False),
-                          ("feuille", "feuille3", True),
-                          ("feuille", "arbre", True)
+                         [(ArbreHuffman('a',1), ArbreHuffman('a', 1), False),
+                          (ArbreHuffman('a',1), ArbreHuffman('b', 2), True),
+                          (ArbreHuffman('a',1), ArbreHuffman(fils_gauche=ArbreHuffman('a', 1),fils_droit=ArbreHuffman('b', 2)), True)
                         ])      
-def test_plus_petit(ab1, ab2, resultat, request):
-    ab1 = request.getfixturevalue(ab1)
-    ab2 = request.getfixturevalue(ab2)
+def test_plus_petit(ab1, ab2, resultat):
     assert (ab1 < ab2) == resultat
 
 @pytest.mark.parametrize("ab1, ab2, resultat",
-                         [("feuille", "feuille2", True),
-                          ("feuille", "feuille3", True),
-                          ("feuille", "arbre", True)
+                         [(ArbreHuffman('a',1), ArbreHuffman('a', 1), True),
+                          (ArbreHuffman('a',1), ArbreHuffman('b', 2), True),
+                          (ArbreHuffman('a',1), ArbreHuffman(fils_gauche=ArbreHuffman('a', 1),fils_droit=ArbreHuffman('b', 2)), True)
                         ])      
-def test_plus_petit_ou_egal(ab1, ab2, resultat, request):
-    ab1 = request.getfixturevalue(ab1)
-    ab2 = request.getfixturevalue(ab2)
+def test_plus_petit_ou_egal(ab1, ab2, resultat):
     assert (ab1 <= ab2) == resultat
 
 @pytest.mark.parametrize("ab1, ab2, resultat",
-                         [("feuille", "feuille2", False),
-                          ("feuille", "feuille3", False),
-                          ("arbre", "feuille", True)
+                         [(ArbreHuffman('a',1), ArbreHuffman('a', 1), False),
+                          (ArbreHuffman('a',1), ArbreHuffman('b', 2), False),
+                          (ArbreHuffman(fils_gauche=ArbreHuffman('a', 1),fils_droit=ArbreHuffman('b', 2)), ArbreHuffman('a',1), True)
                         ])      
-def test_plus_grand(ab1, ab2, resultat, request):
-    ab1 = request.getfixturevalue(ab1)
-    ab2 = request.getfixturevalue(ab2)
+def test_plus_grand(ab1, ab2, resultat):
     assert (ab1 > ab2) == resultat
 
     
 @pytest.mark.parametrize("ab1, ab2, resultat",
-                         [("feuille", "feuille2", True),
-                          ("feuille", "feuille3", False),
-                          ("arbre", "feuille", True)
+                         [(ArbreHuffman('a',1), ArbreHuffman('a', 1), True),
+                          (ArbreHuffman('a',1), ArbreHuffman('b', 2), False),
+                          (ArbreHuffman(fils_gauche=ArbreHuffman('a', 1),fils_droit=ArbreHuffman('b', 2)), ArbreHuffman('a',1), True)
                         ])      
-def test_plus_grand_ou_egal(ab1, ab2, resultat, request):
-    ab1 = request.getfixturevalue(ab1)
-    ab2 = request.getfixturevalue(ab2)
+def test_plus_grand_ou_egal(ab1, ab2, resultat):
     assert (ab1 >= ab2) == resultat 
