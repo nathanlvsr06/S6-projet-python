@@ -1,142 +1,98 @@
 #!/usr/bin/python3
-# @u:file test_code_binaire.py
 
 import pytest
-from huffman.code_binaire import Bit, CodeBinaire, AuMoinsUnBitErreur
-import copy
+from huffman.code_binaire import CodeBinaire, Bit, AuMoinsUnBitErreur
 
-@pytest.fixture(scope="function")
-def code_vide():
-    return CodeBinaire()
+@pytest.mark.parametrize("code_binaire_1, code_binaire_2, resultat",
+                         [(CodeBinaire(Bit.BIT_0), CodeBinaire(Bit.BIT_0), True),
+                          (CodeBinaire(Bit.BIT_1), CodeBinaire(Bit.BIT_1), True),
+                          (CodeBinaire(Bit.BIT_1), CodeBinaire(Bit.BIT_0), False),
+                          (CodeBinaire(Bit.BIT_1, Bit.BIT_0), CodeBinaire(Bit.BIT_1, Bit.BIT_0), True),
+                          (CodeBinaire(Bit.BIT_1, Bit.BIT_1), CodeBinaire(Bit.BIT_1, Bit.BIT_0), False),
+                        ])
+def test_egalite(code_binaire_1, code_binaire_2, resultat):
+    assert (code_binaire_1 == code_binaire_2) == resultat
 
-@pytest.fixture(scope="function")
-def code_non_vide():
-    return CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_1)
+def test_ajoute_bien_a_la_fin():
+    c = CodeBinaire(Bit.BIT_0)
+    c.ajouter(Bit.BIT_1)
+    assert c[len(c)-1] == Bit.BIT_1
 
-@pytest.fixture(scope="function")
-def code_non_vide2():
-    return CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_1)
+@pytest.mark.parametrize("code_binaire, indice_slice, resultat",
+                         [(CodeBinaire(Bit.BIT_0), 0, Bit.BIT_0),
+                          (CodeBinaire(Bit.BIT_0, Bit.BIT_1), 1, Bit.BIT_1),
+                          (CodeBinaire(Bit.BIT_0, Bit.BIT_1), -1, Bit.BIT_1),
+                          (CodeBinaire(Bit.BIT_0, Bit.BIT_1), -2, Bit.BIT_0),
+                          (CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_0), slice(0,1), CodeBinaire(Bit.BIT_0)),
+                          (CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_0), slice(1,3), CodeBinaire(Bit.BIT_1,Bit.BIT_0)),
+                          (CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_0), slice(None,None), CodeBinaire(Bit.BIT_0, Bit.BIT_1,Bit.BIT_0)),
+                          (CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_0), slice(None,-1), CodeBinaire(Bit.BIT_0, Bit.BIT_1)),
+                          (CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_0), slice(-2, None), CodeBinaire(Bit.BIT_1, Bit.BIT_0)),
+                        ])
+def test_get(code_binaire, indice_slice, resultat):
+    assert code_binaire[indice_slice] == resultat
 
-@pytest.fixture(scope="function")
-def code_non_vide3():
-    return CodeBinaire(Bit.BIT_1, Bit.BIT_0, Bit.BIT_1)
-
-@pytest.mark.parametrize("code_b1, code_b2, resultat",
-                         [("code_vide", "code_vide", True),
-                          ("code_vide", "code_non_vide", False),
-                          ("code_non_vide", "code_non_vide2", True)
+@pytest.mark.parametrize("code_binaire, indice_slice, bit_bits_ou_code_binaire, resultat",
+                         [(CodeBinaire(Bit.BIT_0), 0, Bit.BIT_1, CodeBinaire(Bit.BIT_1)),
+                          (CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_0), 1, Bit.BIT_0, CodeBinaire(Bit.BIT_0, Bit.BIT_0, Bit.BIT_0)),
+                          (CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_0), slice(0,2), [Bit.BIT_1, Bit.BIT_0], CodeBinaire(Bit.BIT_1, Bit.BIT_0, Bit.BIT_0)),
+                          (CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_0), slice(0,2), CodeBinaire(Bit.BIT_1, Bit.BIT_0), CodeBinaire(Bit.BIT_1, Bit.BIT_0, Bit.BIT_0)),
+                          (CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_0), slice(0,2), [Bit.BIT_1, Bit.BIT_1, Bit.BIT_0], CodeBinaire(Bit.BIT_1, Bit.BIT_1, Bit.BIT_0, Bit.BIT_0)),                        
                         ])    
-def test_eq(code_b1, code_b2, resultat, request):
-    code_b1 = request.getfixturevalue(code_b1)
-    code_b2 = request.getfixturevalue(code_b2)
-    assert (code_b1 == code_b2) == resultat
+def test_set(code_binaire, indice_slice, bit_bits_ou_code_binaire, resultat):
+    code_binaire[indice_slice] = bit_bits_ou_code_binaire
+    assert code_binaire == resultat
 
-def test_ajout_bit_a_la_fin(code_non_vide):
-    code_non_vide.ajouter(Bit.BIT_1)
-    assert code_non_vide == CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_1, Bit.BIT_1)
+@pytest.mark.parametrize("code_binaire, indice_slice, resultat",
+                         [(CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_0), 0, CodeBinaire(Bit.BIT_1, Bit.BIT_0)),
+                          (CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_0), slice(1,3), CodeBinaire(Bit.BIT_0)),
+                        ])    
+def test_del(code_binaire, indice_slice, resultat):
+    del(code_binaire[indice_slice])
+    assert code_binaire == resultat
 
-@pytest.mark.parametrize("code_b, resultat",
-                         [("code_non_vide", Bit.BIT_0),
-                          ("code_non_vide3", Bit.BIT_1),
-                        ])  
-def test_lecture_int(code_b, resultat, request):
-    code_b = request.getfixturevalue(code_b)
-    assert code_b[0] == resultat
-
-@pytest.mark.parametrize("code_b, resultat",
-                         [("code_non_vide", CodeBinaire(Bit.BIT_0, Bit.BIT_1)),
-                          ("code_non_vide3", CodeBinaire(Bit.BIT_1, Bit.BIT_0)),
-                        ])  
-def test_lecture_slice(code_b, resultat, request):
-    code_b = request.getfixturevalue(code_b)
-    assert code_b[:2] == resultat
-
-@pytest.mark.parametrize("code_b, resultat",
-                         [("code_non_vide", CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_1)),
-                          ("code_non_vide3", CodeBinaire(Bit.BIT_1, Bit.BIT_1, Bit.BIT_1)),
-                        ])  
-def test_ecriture_int(code_b, resultat, request):
-    code_b = request.getfixturevalue(code_b)
-    code_b[1] = Bit.BIT_1
-    assert code_b == resultat
-
-@pytest.mark.parametrize("code_b, resultat",
-                         [("code_non_vide", CodeBinaire(Bit.BIT_0, Bit.BIT_0, Bit.BIT_0)),
-                          ("code_non_vide3", CodeBinaire(Bit.BIT_1, Bit.BIT_0, Bit.BIT_0)),
-                        ]) 
-def test_ecriture_slice(code_b, resultat, request):
-    code_b = request.getfixturevalue(code_b)
-    code_b[1:] = CodeBinaire(Bit.BIT_0, Bit.BIT_0)
-    assert code_b == resultat
-
-def test_ecriture_supp_slice(code_non_vide):
-    code_non_vide[3:5] = (Bit.BIT_0, Bit.BIT_1)
-    assert code_non_vide == CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_1, Bit.BIT_0, Bit.BIT_1)
-
-@pytest.mark.parametrize("code_b, int, resultat",
-                         [("code_non_vide", 1, CodeBinaire(Bit.BIT_0, Bit.BIT_1)),
-                          ("code_non_vide3", 2, CodeBinaire(Bit.BIT_1, Bit.BIT_0)),
-                        ]) 
-def test_del_int(code_b, int, resultat, request):
-    code_b = request.getfixturevalue(code_b)
-    del(code_b[int])
-    assert code_b == resultat
+@pytest.mark.parametrize("code_binaire_1, code_binaire_2, resultat",
+                         [(CodeBinaire(Bit.BIT_0), CodeBinaire(Bit.BIT_1), CodeBinaire(Bit.BIT_0, Bit.BIT_1)),
+                          (CodeBinaire(Bit.BIT_1), CodeBinaire(Bit.BIT_0), CodeBinaire(Bit.BIT_1, Bit.BIT_0))
+                        ])    
+def test_concatenation(code_binaire_1, code_binaire_2, resultat):
+    assert code_binaire_1 + code_binaire_2 == resultat
 
 
-@pytest.mark.parametrize("code_b, slice, resultat",
-                         [("code_non_vide", slice(1,3), CodeBinaire(Bit.BIT_0)),
-                          ("code_non_vide3", slice(2), CodeBinaire(Bit.BIT_1)),
-                        ]) 
-def test_del_slice(code_b, slice, resultat, request):
-    code_b = request.getfixturevalue(code_b)
-    del(code_b[slice])
-    assert code_b == resultat
 
-@pytest.mark.parametrize("code_b1, code_b2, resultat",
-                         [("code_non_vide", "code_non_vide3", 
-                           CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_1, Bit.BIT_1, Bit.BIT_0, Bit.BIT_1)),
-                          ("code_non_vide3", "code_non_vide", 
-                           CodeBinaire(Bit.BIT_1, Bit.BIT_0, Bit.BIT_1, Bit.BIT_0, Bit.BIT_1, Bit.BIT_1)),
-                        ]) 
-def test_plus(code_b1, code_b2, resultat, request):
-    code_b1 = request.getfixturevalue(code_b1)
-    code_b2 = request.getfixturevalue(code_b2)
-    assert code_b1 + code_b2 == resultat
+@pytest.mark.parametrize("code_binaire, longueur",
+                         [(CodeBinaire(Bit.BIT_0), 1),
+                          (CodeBinaire(Bit.BIT_1, Bit.BIT_0), 2),
+                        ])        
+def test_longueur_apres_creation(code_binaire, longueur):
+    assert len(code_binaire) == longueur
 
-def test_plus_erreur(code_non_vide):
-    with pytest.raises(TypeError):
-        code_non_vide + [1]
+def test_longueur_apres_ajout():
+    c = CodeBinaire(Bit.BIT_0)
+    l = len(c)
+    c.ajouter(Bit.BIT_0)
+    assert len(c) == l+1
 
-def test_len(code_non_vide, code_non_vide3):
-    codes = [code_non_vide, code_non_vide3, code_non_vide + code_non_vide3]
-    resultats = [3, 3, 6]
-    for code, resultat in zip(codes, resultats):
-        assert len(code) == resultat
-
-def test_au_moins_un_bit_erreur(code_non_vide):
+def test_del_au_moins_bit_erreur():
     with pytest.raises(AuMoinsUnBitErreur):
-        del(code_non_vide[:3])
+        c = CodeBinaire(Bit.BIT_0)
+        del c[0] 
 
-@pytest.mark.parametrize("code_b, resultat",
-                         [("code_non_vide", "CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_1)"),
-                          ("code_non_vide3", "CodeBinaire(Bit.BIT_1, Bit.BIT_0, Bit.BIT_1)"),
-                        ])
-def test_repr(code_b, resultat, request):
-    code_b = request.getfixturevalue(code_b)
-    assert repr(code_b) == resultat
+@pytest.mark.parametrize("code_binaire", [CodeBinaire(Bit.BIT_0), CodeBinaire(Bit.BIT_1, Bit.BIT_0)])
+def test_repr(code_binaire):
+    assert eval(repr(code_binaire)) == code_binaire
 
-@pytest.mark.parametrize("code_b, resultat",
-                         [("code_non_vide", CodeBinaire(Bit.BIT_0, Bit.BIT_1, Bit.BIT_1)),
-                          ("code_non_vide3", CodeBinaire(Bit.BIT_1, Bit.BIT_0, Bit.BIT_1))
-                        ])
-def test_eval(code_b, resultat, request):
-    code_b = request.getfixturevalue(code_b)
-    assert eval(repr(code_b)) == resultat
+@pytest.mark.parametrize("code_binaire, string",
+                         [(CodeBinaire(Bit.BIT_0), "0"),
+                          (CodeBinaire(Bit.BIT_1), "1"),
+                          (CodeBinaire(Bit.BIT_1, Bit.BIT_0), "10"),
+                        ])     
+def test_str(code_binaire, string):
+    assert str(code_binaire) == string
 
-@pytest.mark.parametrize("code_b, resultat",
-                         [("code_non_vide", "011"),
-                          ("code_non_vide3", "101")
-                        ])
-def test_str(code_b, resultat, request):
-    code_b = request.getfixturevalue(code_b)
-    assert str(code_b) == resultat
+def test_type_erreur():
+    with pytest.raises(TypeError):
+        CodeBinaire(Bit.BIT_0) + 1
+
+def test_add():
+    assert CodeBinaire(Bit.BIT_0) + CodeBinaire(Bit.BIT_1) == CodeBinaire(Bit.BIT_0,Bit.BIT_1)        

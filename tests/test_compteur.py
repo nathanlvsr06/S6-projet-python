@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# @u:file test_compteur.py
 
 import pytest
 from huffman.compteur import Compteur
@@ -11,6 +10,7 @@ def compteur_vide():
 @pytest.fixture(scope="function")
 def compteur_non_vide():
     return Compteur({'a':2,'b':1,'c':3,'d':1})
+
 
 def test_nb_occurences_present(compteur_non_vide):
     assert compteur_non_vide.nb_occurrences('a') == 2
@@ -40,20 +40,19 @@ def test_elements_compteur_vide(compteur_vide):
 def test_elements_compteur_non_vide(compteur_non_vide):
     assert set(compteur_non_vide.elements) == {"a","b","c","d"}
 
-# Cf. https://miguendes.me/how-to-use-fixtures-as-arguments-in-pytestmarkparametrize
 @pytest.mark.parametrize("compteur, elements",
-                         [("compteur_vide", set()),
-                          ("compteur_non_vide", {"b","d"})
-                         ])
-def test_elements_moins_frequents(compteur, elements, request):
-    assert request.getfixturevalue(compteur).elements_moins_frequents() == elements
+                         [(Compteur(), set()),
+                          (Compteur({'a':2,'b':1,'c':3,'d':1}), {"b","d"})
+                        ])
+def test_elements_moins_frequents(compteur, elements):
+    assert compteur.elements_moins_frequents() == elements
 
 @pytest.mark.parametrize("compteur, elements",
-                         [("compteur_vide", set()),
-                          ("compteur_non_vide", {"c"})
-                         ])
-def test_elements_plus_frequents(compteur, elements, request):
-    assert request.getfixturevalue(compteur).elements_plus_frequents() == elements
+                         [(Compteur(), set()),
+                          (Compteur({'a':2,'b':1,'c':3,'d':1}), {"c"})
+                        ])
+def test_elements_plus_frequents(compteur, elements):
+    assert compteur.elements_plus_frequents() == elements
 
 def test_elements_par_nb_occurences(compteur_non_vide):
     assert compteur_non_vide.elements_par_nb_occurrences() == {1: {'b','d'}, 2:{'a'}, 3:{'c'}}
